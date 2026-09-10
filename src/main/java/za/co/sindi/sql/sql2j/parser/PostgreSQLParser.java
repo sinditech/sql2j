@@ -11,6 +11,7 @@ import java.util.Set;
 import za.co.sindi.sql.sql2j.ast.AlterAction;
 import za.co.sindi.sql.sql2j.ast.AlterStatement;
 import za.co.sindi.sql.sql2j.ast.AlterTableStatement;
+import za.co.sindi.sql.sql2j.ast.CascadeOption;
 import za.co.sindi.sql.sql2j.ast.ColumnConstraint;
 import za.co.sindi.sql.sql2j.ast.ColumnDefinition;
 import za.co.sindi.sql.sql2j.ast.CompositeAttribute;
@@ -26,7 +27,15 @@ import za.co.sindi.sql.sql2j.ast.CreateViewStatement;
 import za.co.sindi.sql.sql2j.ast.DMLStatement;
 import za.co.sindi.sql.sql2j.ast.DQLStatement;
 import za.co.sindi.sql.sql2j.ast.DataType;
+import za.co.sindi.sql.sql2j.ast.DropFunctionStatement;
+import za.co.sindi.sql.sql2j.ast.DropIndexStatement;
+import za.co.sindi.sql.sql2j.ast.DropProcedureStatement;
+import za.co.sindi.sql.sql2j.ast.DropSchemaStatement;
 import za.co.sindi.sql.sql2j.ast.DropStatement;
+import za.co.sindi.sql.sql2j.ast.DropTableStatement;
+import za.co.sindi.sql.sql2j.ast.DropTriggerStatement;
+import za.co.sindi.sql.sql2j.ast.DropTypeStatement;
+import za.co.sindi.sql.sql2j.ast.DropViewStatement;
 import za.co.sindi.sql.sql2j.ast.Expression;
 import za.co.sindi.sql.sql2j.ast.FunctionModifier;
 import za.co.sindi.sql.sql2j.ast.NullHandlingMode;
@@ -116,8 +125,73 @@ public class PostgreSQLParser extends SQLParser {
 	@Override
 	protected DropStatement parseDropStatement() {
 		// TODO Auto-generated method stub
-		return null;
+		if (matchKeyword("TABLE")) {
+			boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            List<QualifiedName> names = new ArrayList<>();
+            do {
+                names.add(parseQualifiedName());
+            } while (match(TokenType.COMMA));
+            return new DropTableStatement(names, ifExists, parseCascadeOption());
+        }
+        if (matchKeyword("INDEX")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            return new DropIndexStatement(parseIdentifierName(), ifExists);
+        }
+        if (matchKeyword("VIEW")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            return new DropViewStatement(parseQualifiedName(), ifExists);
+        }
+        if (matchKeyword("SCHEMA")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            String name = parseIdentifierName();
+            return new DropSchemaStatement(name, ifExists, parseCascadeOption());
+        }
+        if (matchKeyword("FUNCTION")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            QualifiedName name = parseQualifiedName();
+            Optional<List<DataType>> paramTypes = check(TokenType.LPAREN) ? Optional.of(parseDataTypeList()) : Optional.empty();
+            return new DropFunctionStatement(name, ifExists, paramTypes, parseCascadeOption());
+        }
+        if (matchKeyword("PROCEDURE")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            QualifiedName name = parseQualifiedName();
+            Optional<List<DataType>> paramTypes = check(TokenType.LPAREN) ? Optional.of(parseDataTypeList()) : Optional.empty();
+            return new DropProcedureStatement(name, ifExists, paramTypes, parseCascadeOption());
+        }
+        if (matchKeyword("TYPE")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            List<QualifiedName> names = new ArrayList<>();
+            do {
+                names.add(parseQualifiedName());
+            } while (match(TokenType.COMMA));
+            return new DropTypeStatement(names, ifExists, parseCascadeOption());
+        }
+        if (matchKeyword("TRIGGER")) {
+        	boolean ifExists = matchIdentifier("IF") && matchIdentifier("EXISTS"); //matchKeywords("IF", "EXISTS");
+            QualifiedName name = parseQualifiedName();
+            Optional<QualifiedName> tableName = matchKeyword("ON") ? Optional.of(parseQualifiedName()) : Optional.empty();
+            return new DropTriggerStatement(name, ifExists, tableName, parseCascadeOption());
+        }
+        throw error("Expected TABLE, INDEX, VIEW, SCHEMA, FUNCTION, PROCEDURE, TYPE or TRIGGER after DROP");
 	}
+ 
+    private CascadeOption parseCascadeOption() {
+        if (matchIdentifier("CASCADE")) return CascadeOption.CASCADE;
+        if (matchIdentifier("RESTRICT")) return CascadeOption.RESTRICT;
+        return CascadeOption.NONE;
+    }
+    
+    private List<DataType> parseDataTypeList() {
+        expect(TokenType.LPAREN, "Expected '('");
+        List<DataType> types = new ArrayList<>();
+        if (!check(TokenType.RPAREN)) {
+            do {
+                types.add(parseDataType());
+            } while (match(TokenType.COMMA));
+        }
+        expect(TokenType.RPAREN, "Expected ')'");
+        return types;
+    }
 
 	@Override
 	protected TruncateStatement parseTruncateStatement() {
@@ -669,13 +743,13 @@ public class PostgreSQLParser extends SQLParser {
             if (!hasNext()) {
                 throw error("Unterminated BEGIN ... END block in routine body");
             }
-            if (checkKeyword("BEGIN")) {
+            if (checkIdentifier("BEGIN")) {
                 depth++;
                 capture.append(next());
             } else if (checkKeyword("END")) {
                 capture.append(next());
-                if (checkKeyword("IF") || checkKeyword("CASE") || checkKeyword("LOOP")
-                        || checkKeyword("WHILE") || checkKeyword("FOR")) {
+                if (checkIdentifier("IF") || checkKeyword("CASE") || checkIdentifier("LOOP")
+                        || checkIdentifier("WHILE") || checkKeyword("FOR")) {
                     capture.append(next());
                 } else {
                     depth--;
@@ -760,7 +834,7 @@ public class PostgreSQLParser extends SQLParser {
     // ----------------------------------------------------------- CREATE SCHEMA
 
     private CreateSchemaStatement parseCreateSchema() {
-        boolean ifNotExists = matchKeyword("IF") &&  matchKeyword("NOT") &&  matchKeyword("EXISTS");
+        boolean ifNotExists = matchIdentifier("IF") &&  matchKeyword("NOT") &&  matchIdentifier("EXISTS");
         return new CreateSchemaStatement(parseIdentifierName(), ifNotExists);
     }
     
@@ -922,19 +996,19 @@ public class PostgreSQLParser extends SQLParser {
         QualifiedName tableName = parseQualifiedName();
 
         List<TriggerReference> referencing = new ArrayList<>();
-        if (matchKeyword("REFERENCING")) {
+        if (matchIdentifier("REFERENCING")) {
             do {
                 referencing.add(parseTriggerReference());
-            } while (checkKeyword("OLD") || checkKeyword("NEW"));
+            } while (checkIdentifier("OLD") || checkIdentifier("NEW"));
         }
 
         Optional<TriggerLevel> level = Optional.empty();
         if (matchKeyword("FOR")) {
-            matchKeyword("EACH");
-            if (matchKeyword("ROW")) {
+            matchIdentifier("EACH");
+            if (matchIdentifier("ROW")) {
                 level = Optional.of(TriggerLevel.ROW);
             } else {
-                expectKeyword("STATEMENT");
+                expectIdentifier("STATEMENT");
                 level = Optional.of(TriggerLevel.STATEMENT);
             }
         }
@@ -971,9 +1045,9 @@ public class PostgreSQLParser extends SQLParser {
         if (matchKeyword("TRUNCATE")) {
             return new TriggerEvent.Truncate();
         }
-        if (matchKeyword("UPDATE")) {
+        if (matchIdentifier("UPDATE")) {
             List<String> columns = new ArrayList<>();
-            if (matchKeyword("OF")) {
+            if (matchIdentifier("OF")) {
                 do {
                     columns.add(parseIdentifierName());
                 } while (match(TokenType.COMMA));
