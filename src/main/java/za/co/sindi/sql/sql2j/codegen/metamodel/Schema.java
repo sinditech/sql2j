@@ -19,6 +19,7 @@ public final class Schema {
 	private final Optional<String> name;
 	private final Map<String, Table> tables = new LinkedHashMap<>();
 	private final Map<String, Enum> enums = new LinkedHashMap<>();
+	private final Map<String, Record> records = new LinkedHashMap<>();
 	
 	/**
 	 * 
@@ -71,8 +72,24 @@ public final class Schema {
 	public void removeEnum(QualifiedName name) {
 		enums.remove(key(name));
 	}
+	
+	public Collection<Record> records() {
+		return records.values();
+	}
+	
+	public void addRecord(final Record _record) {
+		records.put(key(_record.name()), _record);
+	}
+	 
+	public Optional<Record> findRecord(QualifiedName name) {
+		return Optional.ofNullable(records.get(key(name)));
+	}
+	
+	public void removeRecord(QualifiedName name) {
+		records.remove(key(name));
+	}
 
-    static String key(QualifiedName name) {
+    public static String key(QualifiedName name) {
         // Case-insensitive, schema-qualified lookup key.
         return name.toString().toLowerCase();
     }

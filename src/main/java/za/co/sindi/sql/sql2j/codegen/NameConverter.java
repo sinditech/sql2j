@@ -78,6 +78,28 @@ public final class NameConverter {
         return toPascalCase(singularize(tableName));
     }
 
+    /**
+     * Converts one SQL enum/CHECK label into a valid, conventional Java enum
+     * constant name: uppercased, non-alphanumerics collapsed to a single
+     * underscore, and a leading underscore added if the result would
+     * otherwise start with a digit (an invalid Java identifier).
+     * {@code "in-progress" -> "IN_PROGRESS"}, {@code "3rd_party" -> "_3RD_PARTY"}.
+     */
+    public static String toJavaEnumConstant(String label) {
+        StringBuilder sb = new StringBuilder();
+        for (char ch : label.toCharArray()) {
+            sb.append(Character.isLetterOrDigit(ch) ? Character.toUpperCase(ch) : '_');
+        }
+        String result = sb.toString().replaceAll("_+", "_").replaceAll("^_|_$", "");
+        if (result.isEmpty()) {
+            result = "VALUE";
+        }
+        if (Character.isDigit(result.charAt(0))) {
+            result = "_" + result;
+        }
+        return result;
+    }
+
     /** Strips a trailing {@code _id}/{@code Id} suffix used for FK column -&gt; relationship field naming. */
     public static String stripIdSuffix(String columnName) {
         String lower = columnName.toLowerCase();

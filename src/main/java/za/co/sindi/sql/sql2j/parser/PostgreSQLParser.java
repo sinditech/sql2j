@@ -563,7 +563,7 @@ public class PostgreSQLParser extends SQLParser {
             modifiers.add("ZONE");
         }
 
-        return new DataType(typeName, parameters, modifiers);
+        return new DataType(typeName, parameters, modifiers, List.of());
     }
     
     private ColumnConstraint.References parseReferencesClause() {

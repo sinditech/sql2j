@@ -8,8 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import za.co.sindi.sql.sql2j.ast.DataType;
+import za.co.sindi.sql.sql2j.ast.Expression;
 import za.co.sindi.sql.sql2j.ast.QualifiedName;
 import za.co.sindi.sql.sql2j.ast.TableConstraint;
 
@@ -96,5 +99,33 @@ public final class Table {
 
     public void removeConstraintByName(String constraintName) {
         constraints.removeIf(c -> c.name().map(constraintName::equals).orElse(false));
+    }
+    
+    public static record Column(String name,
+            DataType dataType,
+            boolean nullable,
+            boolean unique,
+            boolean autoIncrement,
+            Optional<Expression> defaultValue) {
+
+    	public Column withNullable(boolean newNullable) {
+            return new Column(name, dataType, newNullable, unique, autoIncrement, defaultValue);
+        }
+
+        public Column withDataType(DataType newType) {
+            return new Column(name, newType, nullable, unique, autoIncrement, defaultValue);
+        }
+
+        public Column withDefaultValue(Optional<Expression> newDefault) {
+            return new Column(name, dataType, nullable, unique, autoIncrement, newDefault);
+        }
+
+        public Column withName(String newName) {
+            return new Column(newName, dataType, nullable, unique, autoIncrement, defaultValue);
+        }
+        
+        public Column withUnique(boolean unique) {
+            return new Column(name, dataType, nullable, unique, autoIncrement, defaultValue);
+        }
     }
 }

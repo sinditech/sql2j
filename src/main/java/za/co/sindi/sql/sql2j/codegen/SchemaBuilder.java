@@ -11,42 +11,32 @@ import za.co.sindi.sql.sql2j.ast.AlterAction;
 import za.co.sindi.sql.sql2j.ast.AlterTableStatement;
 import za.co.sindi.sql.sql2j.ast.ColumnConstraint;
 import za.co.sindi.sql.sql2j.ast.ColumnDefinition;
-import za.co.sindi.sql.sql2j.ast.CreateFunctionStatement;
-import za.co.sindi.sql.sql2j.ast.CreateIndexStatement;
-import za.co.sindi.sql.sql2j.ast.CreateProcedureStatement;
-import za.co.sindi.sql.sql2j.ast.CreateSchemaStatement;
+import za.co.sindi.sql.sql2j.ast.CompositeAttribute;
 import za.co.sindi.sql.sql2j.ast.CreateTableStatement;
-import za.co.sindi.sql.sql2j.ast.CreateTriggerStatement;
 import za.co.sindi.sql.sql2j.ast.CreateTypeStatement;
-import za.co.sindi.sql.sql2j.ast.CreateViewStatement;
 import za.co.sindi.sql.sql2j.ast.DataType;
-import za.co.sindi.sql.sql2j.ast.DropFunctionStatement;
-import za.co.sindi.sql.sql2j.ast.DropIndexStatement;
-import za.co.sindi.sql.sql2j.ast.DropProcedureStatement;
-import za.co.sindi.sql.sql2j.ast.DropSchemaStatement;
 import za.co.sindi.sql.sql2j.ast.DropTableStatement;
-import za.co.sindi.sql.sql2j.ast.DropTriggerStatement;
 import za.co.sindi.sql.sql2j.ast.DropTypeStatement;
-import za.co.sindi.sql.sql2j.ast.DropViewStatement;
 import za.co.sindi.sql.sql2j.ast.Expression;
 import za.co.sindi.sql.sql2j.ast.QualifiedName;
 import za.co.sindi.sql.sql2j.ast.Statement;
 import za.co.sindi.sql.sql2j.ast.TableConstraint;
 import za.co.sindi.sql.sql2j.ast.TypeDefinition;
-import za.co.sindi.sql.sql2j.codegen.metamodel.Column;
+import za.co.sindi.sql.sql2j.codegen.metamodel.Record.Attribute;
 import za.co.sindi.sql.sql2j.codegen.metamodel.Schema;
 import za.co.sindi.sql.sql2j.codegen.metamodel.Schemas;
 import za.co.sindi.sql.sql2j.codegen.metamodel.Table;
+import za.co.sindi.sql.sql2j.codegen.metamodel.Table.Column;
 
 /**
  * @author Buhake Sindi
  * @since 18 August 2026
  */
-public class SchemaGenerator implements ASTVisitor<Void> {
+public class SchemaBuilder implements ASTVisitor<Void> {
 	
 	/** Convenience one-shot entry point. */
     public static void build(List<Statement> statements) {
-    	SchemaGenerator generator = new SchemaGenerator();
+    	SchemaBuilder generator = new SchemaBuilder();
         for (Statement statement : statements) {
         	ASTVisitor.dispatch(statement, generator);
         }
@@ -186,71 +176,79 @@ public class SchemaGenerator implements ASTVisitor<Void> {
 		return null;
 	}
 
-	@Override
-	public Void visitCreateIndex(CreateIndexStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitDropIndex(DropIndexStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitCreateView(CreateViewStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitDropView(DropViewStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitCreateSchema(CreateSchemaStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitDropSchema(DropSchemaStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitCreateFunction(CreateFunctionStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitDropFunction(DropFunctionStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitCreateProcedure(CreateProcedureStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitDropProcedure(DropProcedureStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public Void visitCreateIndex(CreateIndexStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitDropIndex(DropIndexStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitCreateView(CreateViewStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitDropView(DropViewStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitCreateSchema(CreateSchemaStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitDropSchema(DropSchemaStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitCreateFunction(CreateFunctionStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitDropFunction(DropFunctionStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitCreateProcedure(CreateProcedureStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitDropProcedure(DropProcedureStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 	@Override
 	public Void visitCreateType(CreateTypeStatement statement) {
 		// TODO Auto-generated method stub
 		if (statement.definition() instanceof TypeDefinition.Enum _enum) {
 			resolveSchema(statement.typeName()).addEnum(new za.co.sindi.sql.sql2j.codegen.metamodel.Enum(statement.typeName(), _enum.labels()));
+		} else if (statement.definition() instanceof TypeDefinition.Composite composite) {
+			za.co.sindi.sql.sql2j.codegen.metamodel.Record _record = new za.co.sindi.sql.sql2j.codegen.metamodel.Record(statement.typeName());
+			for (CompositeAttribute attribute : composite.attributes()) {
+	            _record.addAttribute(new Attribute(attribute.name(), attribute.dataType(), attribute.collation()));
+	        }
+			
+			
+			resolveSchema(statement.typeName()).addRecord(_record);
 		}
 		return null;
 	}
@@ -261,15 +259,15 @@ public class SchemaGenerator implements ASTVisitor<Void> {
 		return null;
 	}
 
-	@Override
-	public Void visitCreateTrigger(CreateTriggerStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Void visitDropTrigger(DropTriggerStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public Void visitCreateTrigger(CreateTriggerStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Void visitDropTrigger(DropTriggerStatement statement) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 }

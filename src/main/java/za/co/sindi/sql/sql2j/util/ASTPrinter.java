@@ -57,7 +57,7 @@ public final class ASTPrinter implements ASTVisitor<String> {
 
     /** Renders a single statement. */
     public String print(Statement statement) {
-        return AstVisitor.dispatch(statement, this) + ";";
+        return ASTVisitor.dispatch(statement, this) + ";";
     }
 
     /** Renders a full script, one statement per line-pair. */
@@ -296,180 +296,180 @@ public final class ASTPrinter implements ASTVisitor<String> {
         };
     }
 
-    @Override
-    public String visitSelect(SelectStatement s) {
-        return printSelectStatement(s);
-    }
-
-    @Override
-    public String visitUpdate(UpdateStatement s) {
-        StringBuilder sb = new StringBuilder("UPDATE ").append(s.tableName());
-        s.alias().ifPresent(a -> sb.append(" AS ").append(a));
-        sb.append("\nSET ").append(s.assignments().stream()
-                .map(a -> a.column() + " = " + printExpression(a.value()))
-                .collect(Collectors.joining(", ")));
-        if (!s.from().isEmpty()) {
-            sb.append("\nFROM ").append(s.from().stream().map(this::printTableReference).collect(Collectors.joining(", ")));
-        }
-        s.where().ifPresent(w -> sb.append("\nWHERE ").append(printExpression(w)));
-        appendReturning(sb, s.returning());
-        return sb.toString();
-    }
-
-    @Override
-    public String visitDelete(DeleteStatement s) {
-        StringBuilder sb = new StringBuilder("DELETE FROM ").append(s.tableName());
-        s.alias().ifPresent(a -> sb.append(" AS ").append(a));
-        if (!s.using().isEmpty()) {
-            sb.append("\nUSING ").append(s.using().stream().map(this::printTableReference).collect(Collectors.joining(", ")));
-        }
-        s.where().ifPresent(w -> sb.append("\nWHERE ").append(printExpression(w)));
-        appendReturning(sb, s.returning());
-        return sb.toString();
-    }
-
-    private void appendReturning(StringBuilder sb, List<SelectItem> returning) {
-        if (!returning.isEmpty()) {
-            sb.append("\nRETURNING ").append(returning.stream().map(this::printSelectItem).collect(Collectors.joining(", ")));
-        }
-    }
-
-    @Override
-    public String visitInsert(InsertStatement s) {
-        StringBuilder sb = new StringBuilder("INSERT ");
-        s.priority().ifPresent(p -> sb.append(p).append(' '));
-        if (s.ignore()) sb.append("IGNORE ");
-        sb.append("INTO ").append(s.tableName());
-        if (!s.partitions().isEmpty()) {
-            sb.append(" PARTITION (").append(String.join(", ", s.partitions())).append(')');
-        }
-        if (!s.columns().isEmpty()) {
-            sb.append(" (").append(String.join(", ", s.columns())).append(')');
-        }
-        sb.append('\n').append(printInsertSource(s.source()));
-        s.rowAlias().ifPresent(a -> sb.append(" AS ").append(a));
-        s.upsert().ifPresent(u -> sb.append('\n').append(printUpsertClause(u)));
-        appendReturning(sb, s.returning());
-        return sb.toString();
-    }
-
-    private String printInsertSource(InsertSource source) {
-        return switch (source) {
-            case InsertSource.Values(var rows) -> "VALUES " + rows.stream().map(this::printValuesRow).collect(Collectors.joining(", "));
-            case InsertSource.Query(var query) -> printSelectStatement(query);
-            case InsertSource.DefaultValues ignored -> "DEFAULT VALUES";
-            case InsertSource.SetAssignments(var assignments) -> "SET " + printAssignments(assignments);
-        };
-    }
+//    @Override
+//    public String visitSelect(SelectStatement s) {
+//        return printSelectStatement(s);
+//    }
+//
+//    @Override
+//    public String visitUpdate(UpdateStatement s) {
+//        StringBuilder sb = new StringBuilder("UPDATE ").append(s.tableName());
+//        s.alias().ifPresent(a -> sb.append(" AS ").append(a));
+//        sb.append("\nSET ").append(s.assignments().stream()
+//                .map(a -> a.column() + " = " + printExpression(a.value()))
+//                .collect(Collectors.joining(", ")));
+//        if (!s.from().isEmpty()) {
+//            sb.append("\nFROM ").append(s.from().stream().map(this::printTableReference).collect(Collectors.joining(", ")));
+//        }
+//        s.where().ifPresent(w -> sb.append("\nWHERE ").append(printExpression(w)));
+//        appendReturning(sb, s.returning());
+//        return sb.toString();
+//    }
+//
+//    @Override
+//    public String visitDelete(DeleteStatement s) {
+//        StringBuilder sb = new StringBuilder("DELETE FROM ").append(s.tableName());
+//        s.alias().ifPresent(a -> sb.append(" AS ").append(a));
+//        if (!s.using().isEmpty()) {
+//            sb.append("\nUSING ").append(s.using().stream().map(this::printTableReference).collect(Collectors.joining(", ")));
+//        }
+//        s.where().ifPresent(w -> sb.append("\nWHERE ").append(printExpression(w)));
+//        appendReturning(sb, s.returning());
+//        return sb.toString();
+//    }
+//
+//    private void appendReturning(StringBuilder sb, List<SelectItem> returning) {
+//        if (!returning.isEmpty()) {
+//            sb.append("\nRETURNING ").append(returning.stream().map(this::printSelectItem).collect(Collectors.joining(", ")));
+//        }
+//    }
+//
+//    @Override
+//    public String visitInsert(InsertStatement s) {
+//        StringBuilder sb = new StringBuilder("INSERT ");
+//        s.priority().ifPresent(p -> sb.append(p).append(' '));
+//        if (s.ignore()) sb.append("IGNORE ");
+//        sb.append("INTO ").append(s.tableName());
+//        if (!s.partitions().isEmpty()) {
+//            sb.append(" PARTITION (").append(String.join(", ", s.partitions())).append(')');
+//        }
+//        if (!s.columns().isEmpty()) {
+//            sb.append(" (").append(String.join(", ", s.columns())).append(')');
+//        }
+//        sb.append('\n').append(printInsertSource(s.source()));
+//        s.rowAlias().ifPresent(a -> sb.append(" AS ").append(a));
+//        s.upsert().ifPresent(u -> sb.append('\n').append(printUpsertClause(u)));
+//        appendReturning(sb, s.returning());
+//        return sb.toString();
+//    }
+//
+//    private String printInsertSource(InsertSource source) {
+//        return switch (source) {
+//            case InsertSource.Values(var rows) -> "VALUES " + rows.stream().map(this::printValuesRow).collect(Collectors.joining(", "));
+//            case InsertSource.Query(var query) -> printSelectStatement(query);
+//            case InsertSource.DefaultValues ignored -> "DEFAULT VALUES";
+//            case InsertSource.SetAssignments(var assignments) -> "SET " + printAssignments(assignments);
+//        };
+//    }
 
     private String printValuesRow(List<Expression> row) {
         return "(" + row.stream().map(this::printExpression).collect(Collectors.joining(", ")) + ")";
     }
 
-    private String printAssignments(List<UpdateAssignment> assignments) {
-        return assignments.stream().map(a -> a.column() + " = " + printExpression(a.value())).collect(Collectors.joining(", "));
-    }
-
-    private String printUpsertClause(UpsertClause upsert) {
-        return switch (upsert) {
-            case UpsertClause.OnDuplicateKeyUpdate(var assignments) -> "ON DUPLICATE KEY UPDATE " + printAssignments(assignments);
-            case UpsertClause.OnConflict(var cols, var constraint, var doNothing, var doUpdateSet, var where) -> {
-                StringBuilder sb = new StringBuilder("ON CONFLICT");
-                if (!cols.isEmpty()) {
-                    sb.append(" (").append(String.join(", ", cols)).append(')');
-                } else {
-                    constraint.ifPresent(c -> sb.append(" ON CONSTRAINT ").append(c));
-                }
-                if (doNothing) {
-                    sb.append(" DO NOTHING");
-                } else {
-                    sb.append(" DO UPDATE SET ").append(printAssignments(doUpdateSet));
-                    where.ifPresent(w -> sb.append(" WHERE ").append(printExpression(w)));
-                }
-                yield sb.toString();
-            }
-        };
-    }
-
-    @Override
-    public String visitTruncate(TruncateStatement s) {
-        StringBuilder sb = new StringBuilder("TRUNCATE TABLE ");
-        sb.append(s.tables().stream().map(this::printTruncateTarget).collect(Collectors.joining(", ")));
-        s.identityOption().ifPresent(opt -> sb.append(' ').append(opt).append(" IDENTITY"));
-        sb.append(cascadeSuffix(s.cascadeOption()));
-        return sb.toString();
-    }
-
-    private String printTruncateTarget(TruncateTarget target) {
-        return (target.only() ? "ONLY " : "") + target.tableName() + (target.includeChildren() ? " *" : "");
-    }
-
-    // ---------------------------------------------------------- select helpers
-
-    /** Renders a {@link SelectStatement}; reused both for top-level {@code SELECT}s and for subqueries. */
-    public String printSelectStatement(SelectStatement s) {
-        StringBuilder sb = new StringBuilder();
-        if (!s.commonTableExpressions().isEmpty()) {
-            sb.append("WITH ");
-            if (s.commonTableExpressions().stream().anyMatch(CommonTableExpression::recursive)) {
-                sb.append("RECURSIVE ");
-            }
-            sb.append(s.commonTableExpressions().stream().map(this::printCte).collect(Collectors.joining(", ")));
-            sb.append('\n');
-        }
-        sb.append("SELECT ");
-        if (s.distinct()) sb.append("DISTINCT ");
-        sb.append(s.selectItems().stream().map(this::printSelectItem).collect(Collectors.joining(", ")));
-        if (!s.from().isEmpty()) {
-            sb.append("\nFROM ").append(s.from().stream().map(this::printTableReference).collect(Collectors.joining(", ")));
-        }
-        s.where().ifPresent(w -> sb.append("\nWHERE ").append(printExpression(w)));
-        if (!s.groupBy().isEmpty()) {
-            sb.append("\nGROUP BY ").append(s.groupBy().stream().map(this::printExpression).collect(Collectors.joining(", ")));
-        }
-        s.having().ifPresent(h -> sb.append("\nHAVING ").append(printExpression(h)));
-        if (!s.orderBy().isEmpty()) {
-            sb.append("\nORDER BY ").append(s.orderBy().stream().map(this::printOrderByItem).collect(Collectors.joining(", ")));
-        }
-        s.limit().ifPresent(l -> sb.append("\nLIMIT ").append(printExpression(l)));
-        s.offset().ifPresent(o -> sb.append("\nOFFSET ").append(printExpression(o)));
-        for (SetOperation op : s.setOperations()) {
-            sb.append('\n').append(op.type()).append(op.all() ? " ALL" : "").append('\n').append(printSelectStatement(op.select()));
-        }
-        return sb.toString();
-    }
-
-    private String printCte(CommonTableExpression cte) {
-        String cols = cte.columnNames().isEmpty() ? "" : " (" + String.join(", ", cte.columnNames()) + ")";
-        return cte.name() + cols + " AS (" + printSelectStatement(cte.query()) + ")";
-    }
-
-    private String printSelectItem(SelectItem item) {
-        return switch (item) {
-            case SelectItem.All ignored -> "*";
-            case SelectItem.AllFromTable(var table) -> table + ".*";
-            case SelectItem.Expr(var expr, var alias) -> printExpression(expr) + alias.map(a -> " AS " + a).orElse("");
-        };
-    }
-
-    private String printTableReference(TableReference ref) {
-        return switch (ref) {
-            case TableReference.Named(var name, var alias) -> name + alias.map(a -> " AS " + a).orElse("");
-            case TableReference.Subquery(var query, var alias) ->
-                    "(" + printSelectStatement(query) + ")" + alias.map(a -> " AS " + a).orElse("");
-            case TableReference.Joined(var left, var joinType, var right, var on, var using) -> {
-                String joinKeyword = joinType == JoinType.CROSS ? "CROSS JOIN" : joinType + " JOIN";
-                String suffix = on.map(o -> " ON " + printExpression(o))
-                        .orElseGet(() -> using.isEmpty() ? "" : " USING (" + String.join(", ", using) + ")");
-                yield printTableReference(left) + " " + joinKeyword + " " + printTableReference(right) + suffix;
-            }
-        };
-    }
-
-    private String printOrderByItem(OrderByItem item) {
-        String nulls = item.nulls().map(n -> " NULLS " + n).orElse("");
-        return printExpression(item.expression()) + " " + item.direction() + nulls;
-    }
+//    private String printAssignments(List<UpdateAssignment> assignments) {
+//        return assignments.stream().map(a -> a.column() + " = " + printExpression(a.value())).collect(Collectors.joining(", "));
+//    }
+//
+//    private String printUpsertClause(UpsertClause upsert) {
+//        return switch (upsert) {
+//            case UpsertClause.OnDuplicateKeyUpdate(var assignments) -> "ON DUPLICATE KEY UPDATE " + printAssignments(assignments);
+//            case UpsertClause.OnConflict(var cols, var constraint, var doNothing, var doUpdateSet, var where) -> {
+//                StringBuilder sb = new StringBuilder("ON CONFLICT");
+//                if (!cols.isEmpty()) {
+//                    sb.append(" (").append(String.join(", ", cols)).append(')');
+//                } else {
+//                    constraint.ifPresent(c -> sb.append(" ON CONSTRAINT ").append(c));
+//                }
+//                if (doNothing) {
+//                    sb.append(" DO NOTHING");
+//                } else {
+//                    sb.append(" DO UPDATE SET ").append(printAssignments(doUpdateSet));
+//                    where.ifPresent(w -> sb.append(" WHERE ").append(printExpression(w)));
+//                }
+//                yield sb.toString();
+//            }
+//        };
+//    }
+//
+//    @Override
+//    public String visitTruncate(TruncateStatement s) {
+//        StringBuilder sb = new StringBuilder("TRUNCATE TABLE ");
+//        sb.append(s.tables().stream().map(this::printTruncateTarget).collect(Collectors.joining(", ")));
+//        s.identityOption().ifPresent(opt -> sb.append(' ').append(opt).append(" IDENTITY"));
+//        sb.append(cascadeSuffix(s.cascadeOption()));
+//        return sb.toString();
+//    }
+//
+//    private String printTruncateTarget(TruncateTarget target) {
+//        return (target.only() ? "ONLY " : "") + target.tableName() + (target.includeChildren() ? " *" : "");
+//    }
+//
+//    // ---------------------------------------------------------- select helpers
+//
+//    /** Renders a {@link SelectStatement}; reused both for top-level {@code SELECT}s and for subqueries. */
+//    public String printSelectStatement(SelectStatement s) {
+//        StringBuilder sb = new StringBuilder();
+//        if (!s.commonTableExpressions().isEmpty()) {
+//            sb.append("WITH ");
+//            if (s.commonTableExpressions().stream().anyMatch(CommonTableExpression::recursive)) {
+//                sb.append("RECURSIVE ");
+//            }
+//            sb.append(s.commonTableExpressions().stream().map(this::printCte).collect(Collectors.joining(", ")));
+//            sb.append('\n');
+//        }
+//        sb.append("SELECT ");
+//        if (s.distinct()) sb.append("DISTINCT ");
+//        sb.append(s.selectItems().stream().map(this::printSelectItem).collect(Collectors.joining(", ")));
+//        if (!s.from().isEmpty()) {
+//            sb.append("\nFROM ").append(s.from().stream().map(this::printTableReference).collect(Collectors.joining(", ")));
+//        }
+//        s.where().ifPresent(w -> sb.append("\nWHERE ").append(printExpression(w)));
+//        if (!s.groupBy().isEmpty()) {
+//            sb.append("\nGROUP BY ").append(s.groupBy().stream().map(this::printExpression).collect(Collectors.joining(", ")));
+//        }
+//        s.having().ifPresent(h -> sb.append("\nHAVING ").append(printExpression(h)));
+//        if (!s.orderBy().isEmpty()) {
+//            sb.append("\nORDER BY ").append(s.orderBy().stream().map(this::printOrderByItem).collect(Collectors.joining(", ")));
+//        }
+//        s.limit().ifPresent(l -> sb.append("\nLIMIT ").append(printExpression(l)));
+//        s.offset().ifPresent(o -> sb.append("\nOFFSET ").append(printExpression(o)));
+//        for (SetOperation op : s.setOperations()) {
+//            sb.append('\n').append(op.type()).append(op.all() ? " ALL" : "").append('\n').append(printSelectStatement(op.select()));
+//        }
+//        return sb.toString();
+//    }
+//
+//    private String printCte(CommonTableExpression cte) {
+//        String cols = cte.columnNames().isEmpty() ? "" : " (" + String.join(", ", cte.columnNames()) + ")";
+//        return cte.name() + cols + " AS (" + printSelectStatement(cte.query()) + ")";
+//    }
+//
+//    private String printSelectItem(SelectItem item) {
+//        return switch (item) {
+//            case SelectItem.All ignored -> "*";
+//            case SelectItem.AllFromTable(var table) -> table + ".*";
+//            case SelectItem.Expr(var expr, var alias) -> printExpression(expr) + alias.map(a -> " AS " + a).orElse("");
+//        };
+//    }
+//
+//    private String printTableReference(TableReference ref) {
+//        return switch (ref) {
+//            case TableReference.Named(var name, var alias) -> name + alias.map(a -> " AS " + a).orElse("");
+//            case TableReference.Subquery(var query, var alias) ->
+//                    "(" + printSelectStatement(query) + ")" + alias.map(a -> " AS " + a).orElse("");
+//            case TableReference.Joined(var left, var joinType, var right, var on, var using) -> {
+//                String joinKeyword = joinType == JoinType.CROSS ? "CROSS JOIN" : joinType + " JOIN";
+//                String suffix = on.map(o -> " ON " + printExpression(o))
+//                        .orElseGet(() -> using.isEmpty() ? "" : " USING (" + String.join(", ", using) + ")");
+//                yield printTableReference(left) + " " + joinKeyword + " " + printTableReference(right) + suffix;
+//            }
+//        };
+//    }
+//
+//    private String printOrderByItem(OrderByItem item) {
+//        String nulls = item.nulls().map(n -> " NULLS " + n).orElse("");
+//        return printExpression(item.expression()) + " " + item.direction() + nulls;
+//    }
 
     // --------------------------------------------------------- routine helpers
 

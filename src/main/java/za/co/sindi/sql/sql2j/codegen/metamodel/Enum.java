@@ -11,8 +11,7 @@ import za.co.sindi.sql.sql2j.ast.QualifiedName;
  * @author Buhake Sindi
  * @since 17 August 2026
  */
-public record Enum(QualifiedName name,
-        List<String> labels) {
+public record Enum(QualifiedName name, List<String> labels) {
 
     public Enum withLabels(List<String> labels) {
         return new Enum(name, labels);

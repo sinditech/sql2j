@@ -17,45 +17,45 @@ package za.co.sindi.sql.sql2j.ast;
  */
 public interface ASTVisitor<R> {
 
-	R visitCreateTable(CreateTableStatement statement);
+	default R visitCreateTable(CreateTableStatement statement) { return null; }
 
-    R visitAlterTable(AlterTableStatement statement);
+    default R visitAlterTable(AlterTableStatement statement) { return null; }
 
-    R visitDropTable(DropTableStatement statement);
+    default R visitDropTable(DropTableStatement statement) { return null; }
 
-    R visitCreateIndex(CreateIndexStatement statement);
+    default R visitCreateIndex(CreateIndexStatement statement) { return null; }
 
-    R visitDropIndex(DropIndexStatement statement);
+    default R visitDropIndex(DropIndexStatement statement) { return null; }
 
-    R visitCreateView(CreateViewStatement statement);
+    default R visitCreateView(CreateViewStatement statement) { return null; }
 
-    R visitDropView(DropViewStatement statement);
+    default R visitDropView(DropViewStatement statement) { return null; }
 
-    R visitCreateSchema(CreateSchemaStatement statement);
+    default R visitCreateSchema(CreateSchemaStatement statement) { return null; }
 
-    R visitDropSchema(DropSchemaStatement statement);
+    default R visitDropSchema(DropSchemaStatement statement) { return null; }
 
-    R visitCreateFunction(CreateFunctionStatement statement);
+    default R visitCreateFunction(CreateFunctionStatement statement) { return null; }
 
-    R visitDropFunction(DropFunctionStatement statement);
+    default R visitDropFunction(DropFunctionStatement statement) { return null; }
 
-    R visitCreateProcedure(CreateProcedureStatement statement);
+    default R visitCreateProcedure(CreateProcedureStatement statement) { return null; }
 
-    R visitDropProcedure(DropProcedureStatement statement);
+    default R visitDropProcedure(DropProcedureStatement statement) { return null; }
 
-    R visitCreateType(CreateTypeStatement statement);
+    default R visitCreateType(CreateTypeStatement statement) { return null; }
 
-    R visitDropType(DropTypeStatement statement);
+    default R visitDropType(DropTypeStatement statement) { return null; }
 
-    R visitCreateTrigger(CreateTriggerStatement statement);
+    default R visitCreateTrigger(CreateTriggerStatement statement) { return null; }
 
-    R visitDropTrigger(DropTriggerStatement statement);
+    default R visitDropTrigger(DropTriggerStatement statement) { return null; }
 
-//    R visitSelect(SelectStatement statement);
+//    default R visitSelect(SelectStatement statement) { return null; }
 //
-//    R visitUpdate(UpdateStatement statement);
+//    default R visitUpdate(UpdateStatement statement) { return null; }
 //
-//    R visitDelete(DeleteStatement statement);
+//    default R visitDelete(DeleteStatement statement) { return null; }
 
     /** Dispatches {@code statement} to the matching {@code visitXxx} method. */
     static <R> R dispatch(Statement statement, ASTVisitor<R> visitor) {

@@ -7,7 +7,7 @@ package za.co.sindi.sql.sql2j.codegen;
  * @author Buhake Sindi
  * @since 18 August 2026
  */
-public record JPAEntityGeneratorConfig(String packageName, boolean useJakartaEENamespace, FetchType toOneFetchType, boolean useIdClassForCompositeKeys, boolean generateEqualsAndHashCode) {
+public record JPAEntityGeneratorConfig(String packageName, boolean useJakartaEENamespace, FetchType toOneFetchType, CompositeKeyStrategy compositeKeyStrategy, boolean generateEqualsAndHashCode) {
 
 	public String persistenceNamespace() {
 		return useJakartaEENamespace ? "jakarta.persistence"  : "javax.persistence";
@@ -30,7 +30,7 @@ public record JPAEntityGeneratorConfig(String packageName, boolean useJakartaEEN
 		private String packageName; 
 		private boolean useJakartaEENamespace = true; 
 		private FetchType toOneFetchType = FetchType.EAGER;
-		private boolean useIdClassForCompositeKeys = true;
+		private CompositeKeyStrategy compositeKeyStrategy = CompositeKeyStrategy.ID_CLASS;
 		private boolean generateEqualsAndHashCode = true;
 		
 		private Builder() {}
@@ -59,13 +59,11 @@ public record JPAEntityGeneratorConfig(String packageName, boolean useJakartaEEN
 			return this;
 		}
 
-		/**
-		 * @param useIdClassForCompositeKeys the useIdClassForCompositeKeys to set
-		 */
-		public Builder useIdClassForCompositeKeys(boolean useIdClassForCompositeKeys) {
-			this.useIdClassForCompositeKeys = useIdClassForCompositeKeys;
-			return this;
-		}
+		/** How a composite primary key is represented: {@code @IdClass} (default) or {@code @EmbeddedId}/{@code @Embeddable}. */
+        public Builder compositeKeyStrategy(CompositeKeyStrategy strategy) {
+            this.compositeKeyStrategy = strategy;
+            return this;
+        }
 
 		/**
 		 * @param generateEqualsAndHashCode the generateEqualsAndHashCode to set
@@ -76,7 +74,7 @@ public record JPAEntityGeneratorConfig(String packageName, boolean useJakartaEEN
 		}
 
 		public JPAEntityGeneratorConfig build() {
-			return new JPAEntityGeneratorConfig(packageName, useJakartaEENamespace, toOneFetchType, useIdClassForCompositeKeys, generateEqualsAndHashCode);
+			return new JPAEntityGeneratorConfig(packageName, useJakartaEENamespace, toOneFetchType, compositeKeyStrategy, generateEqualsAndHashCode);
 		}
 	}
 }
